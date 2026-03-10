@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>News Card Generator Bengali</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:'Poppins',sans-serif;
+background:#eef1f6;
+min-height:100vh;
+display:flex;
+flex-direction:column;
+align-items:center;
+padding:30px;
+}
+
+.header{
+font-size:28px;
+font-weight:600;
+margin-bottom:25px;
+color:#222;
+}
+
+.container{
+display:flex;
+gap:30px;
+max-width:1400px;
+width:100%;
+}
+
+.controls{
+width:350px;
+background:white;
+padding:25px;
+border-radius:14px;
+box-shadow:0 10px 30px rgba(0,0,0,0.08);
+display:flex;
+flex-direction:column;
+gap:15px;
+}
+
+.controls h3{
+font-size:18px;
+margin-bottom:5px;
+}
+
+.controls input{
+padding:10px;
+border:1px solid #ddd;
+border-radius:6px;
+font-size:14px;
+}
+
+.controls button{
+padding:11px;
+border:none;
+border-radius:6px;
+font-size:14px;
+font-weight:500;
+cursor:pointer;
+transition:0.2s;
+}
+
+.btn-primary{
+background:#0b3ea8;
+color:white;
+}
+
+.btn-primary:hover{
+background:#082f7d;
+}
+
+.btn-secondary{
+background:#e9edf7;
+}
+
+.btn-secondary:hover{
+background:#d8def0;
+}
+
+.preview{
+flex:1;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.card{
+width:1080px;
+height:1080px;
+background:#ccc;
+position:relative;
+overflow:hidden;
+box-shadow:0 20px 50px rgba(0,0,0,0.15);
+transform:scale(.55);
+transform-origin:top;
+}
+
+.template{
+position:absolute;
+width:100%;
+height:100%;
+z-index:3;
+pointer-events:none;
+}
+
+.photo{
+position:absolute;
+top:0;
+left:0;
+width:1080px;
+z-index:1;
+touch-action:none;
+}
+
+.title{
+position:absolute;
+bottom:110px;
+left:70px;
+right:70px;
+color:white;
+font-size:80px;
+font-family:'Noto Serif Bengali', serif;
+font-weight:700;
+text-align:center;
+line-height:1.3;
+z-index:4;
+}
+
+.date{
+position:absolute;
+bottom: 16px;
+right:40px;
+color:white;
+font-size:22px;
+font-weight:800;
+z-index:4;
+}
+
+@media(max-width:900px){
+
+.header{
+font-size:16px;
+font-weight:600;
+margin-bottom:25px;
+color:#222;
+}
+
+.container{
+flex-direction:column;
+align-items:center;
+}
+
+.controls{
+width:100%;
+}
+
+.card{
+transform:scale(.35);
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+Monitor News Card Generator Bangla
+</div>
+
+<div class="container">
+
+<div class="controls">
+
+<h3>Upload Photo</h3>
+<input type="file" id="photoUpload">
+
+<h3>Title</h3>
+<input type="text" id="titleInput" placeholder="Enter news title">
+
+<button class="btn-secondary" onclick="increaseTitle()">Increase Title Size</button>
+<button class="btn-secondary" onclick="decreaseTitle()">Decrease Title Size</button>
+
+<h3>Date</h3>
+<input type="text" id="dateInput" placeholder="Enter date">
+
+<button class="btn-secondary" onclick="increaseDate()">Increase Date Size</button>
+<button class="btn-secondary" onclick="decreaseDate()">Decrease Date Size</button>
+
+<button class="btn-primary" onclick="downloadCard()">Download Card</button>
+
+</div>
+
+<div class="preview">
+
+<div class="card" id="card">
+
+<img src="template.png" class="template">
+
+<img id="photo" class="photo">
+
+<div id="title" class="title"></div>
+
+<div id="date" class="date"></div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const photo=document.getElementById("photo")
+
+let scale=1
+let startX,startY
+let isDragging=false
+
+document.getElementById("photoUpload").onchange=function(e){
+
+const reader=new FileReader()
+
+reader.onload=function(){
+photo.src=reader.result
+}
+
+reader.readAsDataURL(e.target.files[0])
+
+}
+
+document.getElementById("titleInput").addEventListener("input",function(){
+document.getElementById("title").innerText=this.value
+})
+
+document.getElementById("dateInput").addEventListener("input",function(){
+document.getElementById("date").innerText=this.value
+})
+
+let titleSize=80
+let dateSize=30
+
+function increaseTitle(){
+titleSize+=4
+document.getElementById("title").style.fontSize=titleSize+"px"
+}
+
+function decreaseTitle(){
+titleSize-=4
+document.getElementById("title").style.fontSize=titleSize+"px"
+}
+
+function increaseDate(){
+dateSize+=2
+document.getElementById("date").style.fontSize=dateSize+"px"
+}
+
+function decreaseDate(){
+dateSize-=2
+document.getElementById("date").style.fontSize=dateSize+"px"
+}
+
+photo.addEventListener("mousedown",(e)=>{
+
+isDragging=true
+startX=e.clientX
+startY=e.clientY
+
+})
+
+document.addEventListener("mousemove",(e)=>{
+
+if(!isDragging) return
+
+let dx=e.clientX-startX
+let dy=e.clientY-startY
+
+photo.style.left=(photo.offsetLeft+dx)+"px"
+photo.style.top=(photo.offsetTop+dy)+"px"
+
+startX=e.clientX
+startY=e.clientY
+
+})
+
+document.addEventListener("mouseup",()=>{
+isDragging=false
+})
+
+/* MOBILE DRAG */
+let startDistance = 0
+
+photo.addEventListener("touchstart",(e)=>{
+
+if(e.touches.length==1){
+
+isDragging=true
+startX=e.touches[0].clientX
+startY=e.touches[0].clientY
+
+}
+
+if(e.touches.length==2){
+
+isDragging=false
+
+let dx=e.touches[0].clientX-e.touches[1].clientX
+let dy=e.touches[0].clientY-e.touches[1].clientY
+
+startDistance=Math.sqrt(dx*dx+dy*dy)
+
+}
+
+})
+
+document.addEventListener("touchmove",(e)=>{
+
+// DRAG
+if(isDragging && e.touches.length==1){
+
+let dx=e.touches[0].clientX-startX
+let dy=e.touches[0].clientY-startY
+
+photo.style.left=(photo.offsetLeft+dx)+"px"
+photo.style.top=(photo.offsetTop+dy)+"px"
+
+startX=e.touches[0].clientX
+startY=e.touches[0].clientY
+
+}
+
+// ZOOM
+if(e.touches.length==2){
+
+let dx=e.touches[0].clientX-e.touches[1].clientX
+let dy=e.touches[0].clientY-e.touches[1].clientY
+
+let distance=Math.sqrt(dx*dx+dy*dy)
+
+if(distance>startDistance){
+scale+=0.02
+}else{
+scale-=0.02
+}
+
+photo.style.transform="scale("+scale+")"
+
+startDistance=distance
+
+}
+
+})
+
+document.addEventListener("touchend",()=>{
+
+isDragging=false
+startDistance=0
+
+})
+
+/* DOWNLOAD */
+
+function downloadCard(){
+
+const card=document.getElementById("card")
+
+card.style.transform="scale(1)"
+
+html2canvas(card,{
+scale:2,
+useCORS:true
+}).then(canvas=>{
+
+const link=document.createElement("a")
+
+link.download="bangla-news-card.png"
+link.href=canvas.toDataURL("image/png")
+
+link.click()
+
+card.style.transform="scale(.55)"
+
+})
+
+}
+
+</script>
+
+</body>
+</html>
